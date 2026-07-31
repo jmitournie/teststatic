@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#0a0e13"/><circle cx="100" cy="100" r="45" fill="none" stroke="#3ce0a0" stroke-width="10"/><path d="M100 60 L100 100 L125 115" stroke="#3ce0a0" stroke-width="8" fill="none" stroke-linecap="round"/></svg></template>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#0a0e13; --panel:#121a24; --panel2:#0d141d; --line:#243140;
+ --text:#e9eef5; --muted:#8595a8; --accent:#3ce0a0; --accent2:#39c6ff;
+ --accent-ink:#04130c; --r:16px;
+ --shadow:0 1px 0 rgba(255,255,255,.03),0 22px 46px -30px rgba(0,0,0,.85);
+ --font-body:'Space Grotesk',system-ui,sans-serif;
+ --font-display:'Space Grotesk',sans-serif;
+ --font-mono:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="light"]{
+ --bg:#eceff3; --panel:#ffffff; --panel2:#f4f6f9; --line:#e2e7ee;
+ --text:#16202b; --muted:#5d6b7a; --accent:#0fa86c; --accent2:#0d83c7; --accent-ink:#ffffff;
+ --shadow:0 1px 2px rgba(16,32,48,.05),0 18px 40px -30px rgba(16,32,48,.32);
+}
+[data-theme="tech"]{
+ --bg:#070a08; --panel:#0c110d; --panel2:#0a0f0b; --line:#1d2a1f;
+ --text:#cde9d3; --muted:#6f8a73; --accent:#5ce08a; --accent2:#9ce8a0; --accent-ink:#04130a;
+ --r:3px; --font-display:'JetBrains Mono',monospace; --font-body:'JetBrains Mono',monospace;
+ --shadow:0 0 0 1px rgba(92,224,138,.06);
+}
+*{box-sizing:border-box}
+body{margin:0}
+input,select,button{font-family:inherit}
+input[type=range]{accent-color:var(--accent);height:4px}
+input[type=checkbox]{accent-color:var(--accent)}
+input:focus,select:focus{border-color:var(--accent) !important}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+@keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" data-screen-label="Calculateur de charge" style="min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font-body);padding:26px 24px 40px">
+ <div style="max-width:1200px;margin:0 auto">
+
+  <!-- HEADER -->
+  <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:22px">
+   <div>
+    <div style="display:flex;align-items:center;gap:10px">
+     <div style="width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)"></div>
+     <div style="font:700 13px/1 var(--font-display);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)">Temps de charge · VE</div>
+    </div>
+    <h1 style="margin:8px 0 0;font:700 30px/1.05 var(--font-display);letter-spacing:-.02em">Calculateur de charge</h1>
+    <div style="margin-top:6px;font:500 13px var(--font-mono);color:var(--muted)">Autonomie {{ range }} km à 100 % · batterie {{ capacity }} kWh</div>
+   </div>
+   <div style="display:flex;gap:8px">
+    <sc-for list="{{ themes }}" as="t" hint-placeholder-count="3">
+     <button onClick="{{ t.onSelect }}" style="{{ t.style }}">{{ t.label }}</button>
+    </sc-for>
+   </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start">
+
+   <!-- LEFT : CONTROLS -->
+   <div style="flex:1 1 340px;max-width:410px;min-width:300px;display:flex;flex-direction:column;gap:18px">
+
+    <!-- Trajet de charge -->
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)">
+     <div style="font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Paramètres de charge</div>
+
+     <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:6px">Heure de départ</label>
+     <input type="time" value="{{ startTime }}" onChange="{{ onStartTime }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font:600 16px var(--font-mono);outline:none;margin-bottom:18px">
+
+     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+      <label style="font:500 12px var(--font-display);color:var(--muted)">Niveau de départ</label>
+      <span style="font:600 18px var(--font-mono);color:var(--text)">{{ startPctStr }}</span>
+     </div>
+     <input type="range" min="0" max="100" step="1" value="{{ startPct }}" onInput="{{ onStartPct }}" style="width:100%">
+     <div style="font:500 11px var(--font-mono);color:var(--muted);margin:3px 0 16px">{{ startKm }}</div>
+
+     <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+      <label style="font:500 12px var(--font-display);color:var(--muted)">Niveau visé</label>
+      <span style="font:600 18px var(--font-mono);color:var(--accent)">{{ endPctStr }}</span>
+     </div>
+     <input type="range" min="0" max="100" step="1" value="{{ endPct }}" onInput="{{ onEndPct }}" style="width:100%">
+     <div style="display:flex;justify-content:space-between;font:500 11px var(--font-mono);color:var(--muted);margin-top:3px">
+      <span>{{ endKm }}</span>
+      <span style="color:var(--accent)">{{ deltaStr }}</span>
+     </div>
+    </div>
+
+    <!-- Mode de charge -->
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)">
+     <div style="font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Mode de charge</div>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <sc-for list="{{ modesView }}" as="m" hint-placeholder-count="4">
+       <button onClick="{{ m.onSelect }}" style="{{ m.cardStyle }}">
+        <div style="display:flex;align-items:baseline;gap:6px">
+         <span style="font:700 20px var(--font-mono);{{ m.kwStyle }}">{{ m.kwStr }}</span>
+        </div>
+        <div style="font:600 13px var(--font-display);margin-top:4px">{{ m.name }}</div>
+        <div style="font:500 11px var(--font-mono);color:var(--muted);margin-top:2px">{{ m.sub }}</div>
+        <div style="font:500 11px var(--font-mono);color:var(--muted);margin-top:8px">{{ m.priceStr }}</div>
+       </button>
+      </sc-for>
+     </div>
+    </div>
+
+    <!-- Réglages avancés -->
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)">
+     <button onClick="{{ onToggleAdvanced }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:none;border:none;color:var(--text);cursor:pointer;padding:0;font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase">
+      <span style="color:var(--muted)">{{ advancedLabel }}</span>
+      <span style="color:var(--accent);font:600 16px var(--font-mono)">{{ advancedSign }}</span>
+     </button>
+
+     <sc-if value="{{ showAdvanced }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:14px;animation:pop .2s ease">
+
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Batterie (kWh)</label>
+         <input type="number" step="1" value="{{ capacity }}" onChange="{{ onCapacity }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Autonomie (km)</label>
+         <input type="number" step="5" value="{{ range }}" onChange="{{ onRange }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+       </div>
+
+       <div>
+        <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Pas du tableau</label>
+        <select value="{{ stepMode }}" onChange="{{ onStep }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px;font:500 14px var(--font-mono);outline:none">
+         <option value="auto">Automatique (selon la puissance)</option>
+         <option value="5">5 minutes</option>
+         <option value="15">15 minutes</option>
+         <option value="30">30 minutes</option>
+         <option value="60">1 heure</option>
+        </select>
+       </div>
+
+       <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+        <input type="checkbox" checked="{{ lossOn }}" onChange="{{ onToggleLoss }}" style="width:17px;height:17px">
+        <span style="font:500 13px var(--font-display)">Pertes de charge réalistes <span style="color:var(--muted)">(~10 % AC)</span></span>
+       </label>
+       <label style="display:flex;align-items:center;gap:9px;cursor:pointer">
+        <input type="checkbox" checked="{{ taperOn }}" onChange="{{ onToggleTaper }}" style="width:17px;height:17px">
+        <span style="font:500 13px var(--font-display)">Ralentissement DC après 80 %</span>
+       </label>
+
+       <div style="height:1px;background:var(--line);margin:2px 0"></div>
+       <div style="font:600 11px var(--font-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Tarifs prise domestique / renforcée</div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Heures pleines (€/kWh)</label>
+         <input type="number" step="0.0001" value="{{ hpPrice }}" onChange="{{ onHp }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Heures creuses (€/kWh)</label>
+         <input type="number" step="0.0001" value="{{ hcPrice }}" onChange="{{ onHc }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+       </div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Début heures creuses</label>
+         <input type="time" value="{{ hcStart }}" onChange="{{ onHcStart }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Fin heures creuses</label>
+         <input type="time" value="{{ hcEnd }}" onChange="{{ onHcEnd }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+       </div>
+
+       <div style="font:600 11px var(--font-display);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Tarifs bornes (€/kWh)</div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Borne 7 kW</label>
+         <input type="number" step="0.01" value="{{ borne7Price }}" onChange="{{ onB7 }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+        <div>
+         <label style="display:block;font:500 12px var(--font-display);color:var(--muted);margin-bottom:5px">Borne 85 kW</label>
+         <input type="number" step="0.01" value="{{ borne85Price }}" onChange="{{ onB85 }}" style="width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 10px;font:500 14px var(--font-mono);outline:none">
+        </div>
+       </div>
+      </div>
+     </sc-if>
+    </div>
+   </div>
+
+   <!-- RIGHT : RESULTS -->
+   <div style="flex:2 1 470px;min-width:320px;display:flex;flex-direction:column;gap:18px">
+
+    <sc-if value="{{ r.hasError }}" hint-placeholder-val="{{ false }}">
+     <div style="background:var(--panel);border:1px dashed var(--line);border-radius:var(--r);padding:40px 24px;text-align:center;color:var(--muted);font:500 15px var(--font-display)">{{ r.error }}</div>
+    </sc-if>
+
+    <sc-if value="{{ r.ok }}" hint-placeholder-val="{{ true }}">
+     <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- HERO SUMMARY -->
+      <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden">
+       <div style="font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">{{ r.modeLabel }} · {{ r.socStr }}</div>
+       <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:18px">
+        <div>
+         <div style="font:700 52px/0.95 var(--font-mono);letter-spacing:-.02em;color:var(--accent)">{{ r.durationStr }}</div>
+         <div style="font:500 12px var(--font-mono);color:var(--muted);margin-top:6px">temps de charge estimé</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+         <div style="font:700 30px/1 var(--font-mono)">{{ r.endTime }}</div>
+         <div style="font:500 12px var(--font-mono);color:var(--muted);margin-top:6px">fin de charge</div>
+        </div>
+       </div>
+
+       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:20px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden">
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Énergie batterie</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px">{{ r.batStr }}</div>
+        </div>
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Soutiré réseau</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px">{{ r.gridStr }}</div>
+        </div>
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Coût total</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px;color:var(--accent)">{{ r.costStr }}</div>
+        </div>
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Pertes</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px">{{ r.lossStr }} <span style="font-size:12px;color:var(--muted)">{{ r.lossPctStr }}</span></div>
+        </div>
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Puissance moy.</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px">{{ r.avgStr }}</div>
+        </div>
+        <div style="background:var(--panel);padding:12px 13px">
+         <div style="font:500 11px var(--font-mono);color:var(--muted)">Autonomie finale</div>
+         <div style="font:600 17px var(--font-mono);margin-top:3px">{{ r.kmFinalStr }}</div>
+        </div>
+       </div>
+      </div>
+
+      <!-- CHART -->
+      <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow)">
+       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)">Progression de la charge</div>
+        <div style="font:500 11px var(--font-mono);color:var(--muted)">pas {{ r.stepStr }}</div>
+       </div>
+       <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:150px;display:block">
+        <line x1="0" y1="20" x2="100" y2="20" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3" vector-effect="non-scaling-stroke"></line>
+        <path d="{{ r.chart.area }}" fill="var(--accent)" fill-opacity="0.12"></path>
+        <path d="{{ r.chart.path }}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+       </svg>
+       <div style="display:flex;justify-content:space-between;font:500 11px var(--font-mono);color:var(--muted);margin-top:8px">
+        <span>{{ r.chart.tStart }}</span>
+        <span style="opacity:.7">— — 80 %</span>
+        <span>{{ r.chart.tEnd }}</span>
+       </div>
+      </div>
+
+      <!-- TABLE -->
+      <div style="background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden">
+       <div style="padding:16px 18px 12px;font:600 11px/1.2 var(--font-display);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)">Détail de la charge</div>
+       <div style="display:grid;grid-template-columns:78px 1fr 64px 70px 66px;align-items:center;gap:10px;padding:8px 18px;font:600 10px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--line)">
+        <div>Heure</div><div>Niveau</div><div style="text-align:right">km</div><div style="text-align:right">kWh</div><div style="text-align:right">Coût</div>
+       </div>
+       <div style="max-height:340px;overflow:auto">
+        <sc-for list="{{ r.rows }}" as="row" hint-placeholder-count="6">
+         <div style="{{ row.rowStyle }}">
+          <div style="font:600 13px var(--font-mono)">{{ row.time }}</div>
+          <div style="display:flex;align-items:center;gap:9px">
+           <div style="flex:1;height:6px;background:var(--panel2);border-radius:999px;overflow:hidden;min-width:40px"><div style="{{ row.barStyle }}"></div></div>
+           <span style="font:600 12px var(--font-mono);width:38px;text-align:right">{{ row.pct }}</span>
+          </div>
+          <div style="text-align:right;font:500 12px var(--font-mono);color:var(--muted)">{{ row.km }}</div>
+          <div style="text-align:right;font:500 12px var(--font-mono);color:var(--muted)">{{ row.kwh }}</div>
+          <div style="text-align:right;font:600 12px var(--font-mono);color:var(--accent)">{{ row.cost }}</div>
+         </div>
+        </sc-for>
+       </div>
+      </div>
+
+      <div style="font:500 11px var(--font-mono);color:var(--muted);line-height:1.6;padding:0 2px">Modèle indicatif. Le temps réel dépend de la température, de l'état de la batterie et de la borne. La charge DC est plafonnée puis réduite après 80 %.</div>
+     </div>
+    </sc-if>
+   </div>
+  </div>
+ </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;,&quot;tech&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;defaultCapacity&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:54,&quot;min&quot;:20,&quot;max&quot;:120,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  static ADVANCED_KEYS = ['capacity','range','lossOn','taperOn','stepMode','hpPrice','hcPrice','hcStart','hcEnd','borne7Price','borne85Price','startTime','startPct','endPct','modeId'];
+  static LS_KEY = 'charge-ve-advanced-settings';
+
+  loadAdvanced(){
+    try {
+      const raw = localStorage.getItem(Component.LS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+  saveAdvanced(state){
+    try {
+      const out = {};
+      Component.ADVANCED_KEYS.forEach(k=>{ out[k] = state[k]; });
+      localStorage.setItem(Component.LS_KEY, JSON.stringify(out));
+    } catch(e){}
+  }
+
+  constructor(props){
+    super(props);
+    const defaults = {
+      theme: (props && props.theme) || 'dark',
+      startTime: '22:00',
+      startPct: 20,
+      endPct: 80,
+      modeId: 'domestique',
+      capacity: (props && props.defaultCapacity) || 54,
+      range: 420,
+      lossOn: true,
+      taperOn: true,
+      stepMode: 'auto',
+      showAdvanced: false,
+      hpPrice: 0.2065,
+      hcPrice: 0.1579,
+      hcStart: '22:00',
+      hcEnd: '06:00',
+      borne7Price: 0.25,
+      borne85Price: 0.59,
+    };
+    const saved = this.loadAdvanced();
+    this.state = saved ? Object.assign(defaults, saved) : defaults;
+  }
+
+  timeToMin(str){ const p = String(str).split(':'); return (Number(p[0])||0)*60 + (Number(p[1])||0); }
+  minToTime(abs){
+    const day = Math.floor(abs/1440);
+    const m = ((Math.round(abs)%1440)+1440)%1440;
+    const h = Math.floor(m/60), mi = m%60;
+    const s = String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0');
+    return day>0 ? s+' +'+day+'j' : s;
+  }
+  fmtN(v,dec){ return Number(v).toFixed(dec).replace('.',','); }
+  fmtEur(v){ return Number(v).toFixed(2).replace('.',',')+' \u20ac'; }
+  fmtDur(min){
+    const h = Math.floor(min/60), m = Math.round(min%60);
+    if(h<=0) return m+' min';
+    return h+' h '+String(m).padStart(2,'0');
+  }
+  inHC(absMin){
+    const m = ((Math.round(absMin)%1440)+1440)%1440;
+    const a = this.timeToMin(this.state.hcStart), b = this.timeToMin(this.state.hcEnd);
+    if(a===b) return false;
+    if(a<b) return m>=a && m<b;
+    return m>=a || m<b;
+  }
+  rateAt(absMin, mode){
+    if(mode.tarif==='borne') return mode.price;
+    return this.inHC(absMin) ? Number(this.state.hcPrice) : Number(this.state.hpPrice);
+  }
+  modes(){
+    const s = this.state;
+    return [
+      { id:'domestique', name:'Prise domestique', sub:'Standard 230V', kw:2.3, type:'ac', tarif:'hphc' },
+      { id:'renforcee', name:'Prise renforc\u00e9e', sub:'Green-up 16A', kw:3.7, type:'ac', tarif:'hphc' },
+      { id:'borne7', name:'Borne 7 kW', sub:'Wallbox AC', kw:7, type:'ac', tarif:'borne', price:Number(s.borne7Price) },
+      { id:'borne85', name:'Borne rapide', sub:'DC 85 kW', kw:85, type:'dc', tarif:'borne', price:Number(s.borne85Price) },
+    ];
+  }
+
+  rowView(e, startMin, end, range){
+    const isFull = e.soc >= end - 0.05;
+    const cols = 'display:grid;grid-template-columns:78px 1fr 64px 70px 66px;align-items:center;gap:10px;padding:9px 18px;border-top:1px solid var(--line)';
+    return {
+      time: this.minToTime(startMin + e.t),
+      pct: this.fmtN(Math.round(e.soc),0)+' %',
+      km: this.fmtN(e.soc/100*range,0)+' km',
+      kwh: this.fmtN(e.bat,1),
+      cost: this.fmtEur(e.cost),
+      barStyle: 'height:100%;width:'+Math.max(0,Math.min(100,e.soc)).toFixed(1)+'%;background:linear-gradient(90deg,var(--accent2),var(--accent))',
+      rowStyle: isFull ? cols+';background:color-mix(in oklab,var(--accent) 12%,transparent)' : cols,
+    };
+  }
+
+  computeResult(){
+    const s = this.state;
+    const mode = this.modes().find(m=>m.id===s.modeId);
+    const start = Number(s.startPct), end = Number(s.endPct);
+    const cap = Number(s.capacity) || 54;
+    const range = Number(s.range) || 420;
+    if(!(end > start)) return { ok:false, hasError:true, error:'Le niveau vis\u00e9 doit \u00eatre sup\u00e9rieur au niveau de d\u00e9part.' };
+
+    const eff = s.lossOn ? (mode.type==='dc' ? 0.96 : 0.90) : 1;
+    const startMin = this.timeToMin(s.startTime);
+    const dt = 1;
+    let soc = start, t = 0, bat = 0, grid = 0, cost = 0, guard = 0;
+    const traj = [{ t:0, soc, bat, grid, cost }];
+    while(soc < end - 1e-9 && guard < 200000){
+      guard++;
+      let pGrid = mode.kw;
+      if(mode.type==='dc' && s.taperOn && soc > 80){
+        const f = Math.min(1, (soc-80)/20);
+        pGrid = mode.kw * (1 - f*0.85);
+      }
+      const pBat = pGrid * eff;
+      let dBat = pBat * (dt/60);
+      let dSoc = dBat / cap * 100;
+      let frac = 1;
+      if(soc + dSoc > end){ frac = (end - soc)/dSoc; dSoc *= frac; dBat *= frac; }
+      const dGrid = pGrid * (dt/60) * frac;
+      soc += dSoc; bat += dBat; grid += dGrid; t += dt*frac;
+      cost += dGrid * this.rateAt(startMin + t, mode);
+      traj.push({ t, soc, bat, grid, cost });
+    }
+    const last = traj[traj.length-1];
+    const kw = mode.kw;
+    const stepMin = s.stepMode==='auto' ? (kw>=50?5:kw>=7?30:60) : Number(s.stepMode);
+
+    const interp = (tg)=>{
+      if(tg<=0) return traj[0];
+      for(let i=1;i<traj.length;i++){
+        if(traj[i].t>=tg){
+          const a=traj[i-1], b=traj[i], rr=(tg-a.t)/((b.t-a.t)||1);
+          return { t:tg, soc:a.soc+(b.soc-a.soc)*rr, bat:a.bat+(b.bat-a.bat)*rr, grid:a.grid+(b.grid-a.grid)*rr, cost:a.cost+(b.cost-a.cost)*rr };
+        }
+      }
+      return last;
+    };
+
+    const rows = [];
+    for(let tg=0; tg < last.t - 0.001; tg += stepMin){ rows.push(this.rowView(interp(tg), startMin, end, range)); }
+    rows.push(this.rowView(last, startMin, end, range));
+
+    const N = 64;
+    let path = '';
+    for(let i=0;i<=N;i++){
+      const tg = last.t * i / N;
+      const e = interp(tg);
+      const x = (last.t ? tg/last.t : 0) * 100;
+      const y = 100 - e.soc;
+      path += (i===0?'M':'L') + x.toFixed(2) + ' ' + y.toFixed(2) + ' ';
+    }
+    const area = 'M0 100 ' + path.replace(/^M/, 'L') + 'L100 100 Z';
+
+    const lossKwh = last.grid - last.bat;
+    return {
+      ok:true, hasError:false,
+      modeLabel: mode.name + ' \u00b7 ' + this.fmtN(mode.kw, mode.kw<10?1:0) + ' kW',
+      socStr: this.fmtN(start,0) + ' \u2192 ' + this.fmtN(end,0) + ' %',
+      durationStr: this.fmtDur(last.t),
+      endTime: this.minToTime(startMin + last.t),
+      batStr: this.fmtN(last.bat,1) + ' kWh',
+      gridStr: this.fmtN(last.grid,1) + ' kWh',
+      lossStr: this.fmtN(lossKwh,1) + ' kWh',
+      lossPctStr: '-' + this.fmtN(last.grid ? (lossKwh/last.grid*100) : 0, 0) + ' %',
+      costStr: this.fmtEur(last.cost),
+      avgStr: this.fmtN(last.t ? last.bat/(last.t/60) : 0, 1) + ' kW',
+      kmFinalStr: this.fmtN(end/100*range,0) + ' km',
+      stepStr: stepMin + ' min',
+      rows,
+      chart: { path, area, tStart: this.minToTime(startMin), tEnd: this.minToTime(startMin + last.t) },
+    };
+  }
+
+  renderVals(){
+    const s = this.state;
+    const isAdv = (k)=>Component.ADVANCED_KEYS.indexOf(k)!==-1;
+    const set = (k)=>(e)=>this.setState({ [k]: e.target.value }, isAdv(k) ? ()=>this.saveAdvanced(this.state) : undefined);
+    const setChecked = (k)=>(e)=>this.setState({ [k]: e.target.checked }, isAdv(k) ? ()=>this.saveAdvanced(this.state) : undefined);
+    const r = this.computeResult();
+
+    const modesView = this.modes().map(m=>{
+      const selected = m.id === s.modeId;
+      const base = 'cursor:pointer;text-align:left;background:var(--panel2);border-radius:calc(var(--r) - 5px);padding:12px;transition:.14s;color:var(--text)';
+      return {
+        name:m.name, sub:m.sub,
+        kwStr: this.fmtN(m.kw, m.kw<10?1:0) + ' kW',
+        priceStr: m.tarif==='borne'
+          ? this.fmtEur(m.price) + '/kWh'
+          : this.fmtEur(this.state.hcPrice) + '\u2013' + this.fmtEur(this.state.hpPrice) + '/kWh',
+        onSelect: ()=>this.setState({ modeId:m.id }, ()=>this.saveAdvanced(this.state)),
+        cardStyle: selected
+          ? base + ';border:1.5px solid var(--accent);box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 20%,transparent)'
+          : base + ';border:1.5px solid var(--line)',
+        kwStyle: selected ? 'color:var(--accent)' : 'color:var(--text)',
+      };
+    });
+
+    const themes = [['dark','Sombre'],['light','Clair'],['tech','Tech']].map(([id,label])=>({
+      label,
+      onSelect: ()=>this.setState({ theme:id }),
+      style: s.theme===id
+        ? 'cursor:pointer;border:none;background:var(--accent);color:var(--accent-ink);font:600 12px var(--font-display);padding:7px 15px;border-radius:999px'
+        : 'cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--muted);font:600 12px var(--font-display);padding:7px 15px;border-radius:999px',
+    }));
+
+    return {
+      theme: s.theme, themes, modesView, r,
+      startTime: s.startTime, startPct: s.startPct, endPct: s.endPct,
+      capacity: s.capacity, range: s.range, lossOn: s.lossOn, taperOn: s.taperOn,
+      stepMode: s.stepMode, showAdvanced: s.showAdvanced,
+      hpPrice: s.hpPrice, hcPrice: s.hcPrice, hcStart: s.hcStart, hcEnd: s.hcEnd,
+      borne7Price: s.borne7Price, borne85Price: s.borne85Price,
+      onStartTime: set('startTime'),
+      onStartPct: (e)=>{ const v=Number(e.target.value); this.setState({ startPct: v }, ()=>this.saveAdvanced(this.state)); },
+      onEndPct: (e)=>{ const v=Number(e.target.value); this.setState({ endPct: v }, ()=>this.saveAdvanced(this.state)); },
+      onCapacity: set('capacity'), onRange: set('range'),
+      onHp: set('hpPrice'), onHc: set('hcPrice'),
+      onHcStart: set('hcStart'), onHcEnd: set('hcEnd'),
+      onB7: set('borne7Price'), onB85: set('borne85Price'),
+      onStep: set('stepMode'),
+      onToggleLoss: setChecked('lossOn'),
+      onToggleTaper: setChecked('taperOn'),
+      onToggleAdvanced: ()=>this.setState({ showAdvanced: !this.state.showAdvanced }),
+      advancedLabel: s.showAdvanced ? 'Masquer les r\u00e9glages' : 'R\u00e9glages avanc\u00e9s',
+      advancedSign: s.showAdvanced ? '\u2212' : '+',
+      startPctStr: this.fmtN(s.startPct,0) + ' %',
+      endPctStr: this.fmtN(s.endPct,0) + ' %',
+      startKm: this.fmtN(s.startPct/100*Number(s.range),0) + ' km',
+      endKm: this.fmtN(s.endPct/100*Number(s.range),0) + ' km',
+      deltaStr: '+' + this.fmtN(Math.max(0, s.endPct - s.startPct),0) + ' %  \u00b7  +' + this.fmtN(Math.max(0,(s.endPct - s.startPct)/100*Number(s.range)),0) + ' km',
+    };
+  }
+}
+</script>
+</body>
+</html>
